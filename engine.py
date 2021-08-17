@@ -30,8 +30,9 @@ def run_container(epicbox, workdir, container):
             return -1.0
 
         diff_res = epicbox.run('gcc_run', f'diff test_output_{container} std_output_{container}',
-                limits={'cputime': 10, 'memory': 1024},
+                limits={'cputime': 20, 'memory': 1024},
                 workdir=workdir)
+        print(f"Diff res: {diff_res}")
         if diff_res['exit_code'] != 0 or diff_res['timeout'] != False or diff_res['oom_killed'] != False:
             return -1.0
         acc.append(res['duration'])
@@ -46,15 +47,19 @@ def test_solution(github_link):
         res = epicbox.run('gcc_clone', f'cp /containers-benchmark/* .',
                     limits={'cputime': 5, 'memory': 64}, 
                     workdir=workdir)
+        print(f"Copy: {res}")
 
         res = epicbox.run('gcc_clone', f'git clone {github_link} tested_code',
                     limits={'cputime': 5, 'memory': 64},
                     workdir=workdir)
+
+        print(f"Clone: {res}")
         
         # compilation
         res = epicbox.run('gcc_compile', './compile_all_benchmarks.sh',
-                            limits={'cputime': 2, 'memory': 128},
+                            limits={'cputime': 2, 'memory': 80000},
                             workdir=workdir)
+        print(f"Compile benchmarks: {res}")
 
         res = epicbox.run('gcc_compile', 'touch test_output_stack test_output_vector test_output_map',
                             limits={'cputime': 2, 'memory': 128},
@@ -63,12 +68,8 @@ def test_solution(github_link):
         res = epicbox.run('gcc_compile', 'chmod 777 test_output_map test_output_vector test_output_stack',
                             limits={'cputime': 2, 'memory': 128},
                             workdir=workdir)
-        print(f"Comp: {res}")
 
-        res = epicbox.run('gcc_compile', './compile_all_benchmarks.sh',
-                            limits={'cputime': 2, 'memory': 128},
-                            workdir=workdir)
-        print(f"Comp_b: {res}")
+        # print(f"Comp_b: {res}")
 
 
         # return True
